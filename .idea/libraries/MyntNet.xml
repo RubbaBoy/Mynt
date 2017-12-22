@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MyntNet">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/MyntNet.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
