@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MyntLogger">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/MyntLogger.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

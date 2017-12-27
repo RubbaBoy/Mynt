@@ -1,4 +1,4 @@
-package mynt.packets;
+package mynt.network.packet.status;
 
 import myntnet.client.Client;
 import myntnet.packet.incoming.impl.PacketReadable;

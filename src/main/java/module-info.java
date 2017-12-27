@@ -1,9 +1,9 @@
-module Server {
+module Mynt {
     requires gson;
-    requires guava;
     requires java.sql;
+    requires jdk.incubator.httpclient;
     requires MyntNet;
 
-    exports mynt to gson;
-    opens mynt to gson;
+    exports mynt.network.packet.status to gson;
+    opens mynt.network.packet.status to gson;
 }

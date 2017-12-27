@@ -1,13 +1,12 @@
-package mynt.packets;
+package mynt.network.packet.status;
 
 import myntnet.client.Client;
 import myntnet.packet.incoming.impl.PacketRaw;
 import myntnet.packet.outgoing.OutgoingPacket;
-import mynt.StatusResponse;
 
 import static util.GsonUtil.GSON;
 
-public class PacketRequest implements PacketRaw {
+public class PacketStatusRequest implements PacketRaw {
 
     @Override
     public void read(Client client) {

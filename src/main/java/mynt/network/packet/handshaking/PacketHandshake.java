@@ -1,4 +1,4 @@
-package mynt.packets;
+package mynt.network.packet.handshaking;
 
 import myntnet.client.Client;
 import myntnet.client.State;
