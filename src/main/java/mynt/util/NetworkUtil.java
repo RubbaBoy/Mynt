@@ -1,4 +1,4 @@
-package util;
+package mynt.util;
 
 import javax.crypto.Cipher;
 import java.security.*;

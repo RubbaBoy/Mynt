@@ -1,20 +1,29 @@
-package mynt.network.packet.login;
+package mynt.network.packet.incoming.login;
 
 import jdk.incubator.http.HttpClient;
 import jdk.incubator.http.HttpRequest;
 import jdk.incubator.http.HttpResponse;
+import mynt.network.packet.outgoing.login.PacketLoginSuccess;
+import mynt.network.packet.outgoing.play.PacketJoinGame;
+import mynt.network.packet.outgoing.play.PacketPlayerAbilities;
+import mynt.network.packet.outgoing.play.PacketSpawnPosition;
 import myntnet.client.Client;
+import myntnet.client.State;
 import myntnet.packet.incoming.impl.PacketReadable;
+import myntnet.packet.outgoing.PacketOutgoing;
 import myntnet.util.BufferUtil;
-import util.NetworkUtil;
+import mynt.util.NetworkUtil;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static myntlogger.Logger.getLogger;
+import static mynt.util.GsonUtil.GSON;
 
 public final class PacketEncryptionResponse implements PacketReadable {
 
@@ -51,7 +60,7 @@ public final class PacketEncryptionResponse implements PacketReadable {
             return;
         }
 
-        client.setSharedSecret(decodedSecret);
+        client.setSharedSecret(new SecretKeySpec(decodedSecret, "AES"));
 
         getLogger().info("Verification Token (After Decoding): " + Arrays.toString(decodedToken));
 
@@ -61,20 +70,31 @@ public final class PacketEncryptionResponse implements PacketReadable {
         SHA.update(decodedSecret);
         SHA.update(NetworkUtil.getEncodedPublicKey());
 
-        byte[] hashBytes = SHA.digest();
-
-        String hash = new BigInteger(1, hashBytes).toString(16);
+        String hash = new BigInteger(SHA.digest()).toString(16);
 
         try {
             HttpClient httpClient = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
+                    .version(HttpClient.Version.HTTP_2)
                     .uri(new URI("https://sessionserver.mojang.com/session/minecraft/hasJoined?username=" + client.getProfileName() + "&serverId=" + hash))
-                    .GET()
-                    .build();
+                    .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36")
+                    .GET().build();
 
             httpClient.sendAsync(request, HttpResponse.BodyHandler.asString())
-                      .thenAccept(response -> getLogger().info(response.body()));
+                      .thenAccept(response -> {
+                          client.setState(State.PLAY);
+
+                          LoginResponse loginResponse = GSON.fromJson(response.body(), LoginResponse.class);
+
+                          client.write(new PacketLoginSuccess(loginResponse));
+                          client.write(new PacketJoinGame());
+                          client.write(new PacketSpawnPosition());
+                          client.write(new PacketPlayerAbilities());
+                      }).exceptionally(throwable -> {
+                         throwable.printStackTrace();
+                         return null;
+                      });
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package util;
+package mynt.util;
 
 import com.google.gson.Gson;
 

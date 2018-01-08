@@ -1,4 +1,4 @@
-package mynt.network.packet.status;
+package mynt.network.packet.incoming.status;
 
 import java.util.concurrent.ThreadLocalRandom;
 

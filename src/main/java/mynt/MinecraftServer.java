@@ -1,12 +1,19 @@
 package mynt;
 
-import mynt.network.packet.handshaking.PacketLegacyPing;
-import mynt.network.packet.login.PacketEncryptionResponse;
-import mynt.network.packet.login.PacketLoginStart;
+import mynt.network.packet.incoming.handshaking.PacketLegacyPing;
+import mynt.network.packet.incoming.login.PacketEncryptionResponse;
+import mynt.network.packet.incoming.login.PacketLoginStart;
+import myntnet.client.Client;
 import myntnet.server.Server;
-import mynt.network.packet.handshaking.PacketHandshake;
-import mynt.network.packet.status.PacketPing;
-import mynt.network.packet.status.PacketStatusRequest;
+import mynt.network.packet.incoming.handshaking.PacketHandshake;
+import mynt.network.packet.incoming.status.PacketPing;
+import mynt.network.packet.incoming.status.PacketStatusRequest;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static myntlogger.Logger.getLogger;
 import static myntnet.client.State.HANDSHAKING;
@@ -15,12 +22,20 @@ import static myntnet.client.State.STATUS;
 
 public class MinecraftServer {
 
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+
+    private static final Set<Client> CLIENTS = new HashSet<>();
+
     private static Server server;
 
     public static void main(String[] args) {
         server = new Server();
 
+        server.onConnect(client -> client.setServer(server));
         server.onConnect(client -> getLogger().info(client + " connected successfully!"));
+        server.onConnect(CLIENTS::add);
+
+        server.onDisconnect(CLIENTS::remove);
 
         getLogger().warn("TEST");
         getLogger().error("TEST");
@@ -34,9 +49,9 @@ public class MinecraftServer {
 
         server.bind("localhost", 25565);
 
-        while (true) {
-            Thread.onSpinWait();
-        }
+        EXECUTOR.scheduleAtFixedRate(() -> {
+            CLIENTS.forEach(Client::flushOutgoingPackets);
+        }, 0, 50, TimeUnit.MILLISECONDS);
     }
 
     public static Server getServer() {

@@ -1,10 +1,11 @@
-package mynt.network.packet.login;
+package mynt.network.packet.incoming.login;
 
+import mynt.network.packet.outgoing.login.PacketEncryptionRequest;
 import myntnet.client.Client;
 import myntnet.packet.incoming.impl.PacketReadable;
-import myntnet.packet.outgoing.OutgoingPacket;
+import myntnet.packet.outgoing.PacketOutgoing;
 import myntnet.util.BufferUtil;
-import util.NetworkUtil;
+import mynt.util.NetworkUtil;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -29,14 +30,7 @@ public final class PacketLoginStart implements PacketReadable {
 
         getLogger().info("Verification Token (Before Encoding): " + Arrays.toString(token));
 
-        byte[] encodedPublicKey = NetworkUtil.getEncodedPublicKey();
-
-        new OutgoingPacket(1).putString("")
-                                    .putVarInt(encodedPublicKey.length)
-                                    .putBytes(encodedPublicKey)
-                                    .putVarInt(token.length)
-                                    .putBytes(token)
-                                    .send(client);
+        client.write(new PacketEncryptionRequest(token));
     }
 
 }
