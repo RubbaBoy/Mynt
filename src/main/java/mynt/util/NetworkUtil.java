@@ -56,7 +56,6 @@ public final class NetworkUtil {
 
         try {
             DECRYPT_CIPHER = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-
             DECRYPT_CIPHER.init(Cipher.DECRYPT_MODE, PRIVATE_KEY);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to initialize the decrypt cipher!");

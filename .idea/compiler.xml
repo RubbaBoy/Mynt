@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Mynt" target="9" />
+      <module name="Mynt" target="10" />
       <module name="Server" target="1.5" />
     </bytecodeTargetLevel>
   </component>
