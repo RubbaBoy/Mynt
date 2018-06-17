@@ -1,6 +1,7 @@
 package mynt.network.packet.outgoing;
 
-import java.io.ByteArrayOutputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import mynt.util.BufferUtil;
 import simplenet.Client;
 import simplenet.packet.Packet;
@@ -27,7 +28,7 @@ public interface PacketOutgoing {
         Packet packet = Packet.builder();
         BufferUtil.putVarInt(getOpcode(), packet);
         write(packet);
-        packet.prepend(stream -> writeVarInt(packet.getSize(), stream));
+        packet.prepend(() -> writeVarInt(packet.getSize(), packet));
         packet.write(clients);
     }
 
@@ -35,11 +36,13 @@ public interface PacketOutgoing {
         Packet packet = Packet.builder();
         BufferUtil.putVarInt(getOpcode(), packet);
         write(packet);
-        packet.prepend(stream -> writeVarInt(packet.getSize(), stream));
+        packet.prepend(() -> writeVarInt(packet.getSize(), packet));
         packet.writeAndFlush(clients);
     }
 
-    private void writeVarInt(int value, ByteArrayOutputStream stream) {
+    private void writeVarInt(int value, Packet packet) {
+        Deque<Byte> stack = new ArrayDeque<>();
+
         do {
             byte temp = (byte) (value & 0b01111111);
 
@@ -47,8 +50,12 @@ public interface PacketOutgoing {
                 temp |= 0b10000000;
             }
 
-            stream.write(temp);
+            stack.push(temp);
         } while (value != 0);
+
+        while (!stack.isEmpty()) {
+            packet.putByte(stack.pop());
+        }
     }
 
 }
